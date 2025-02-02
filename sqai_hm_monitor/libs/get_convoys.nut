@@ -1,13 +1,11 @@
 // メッセージ定義
 local text_title = "%s の%s編成一覧（計 %d 編成） \n" //%sは会社名、属性名。%dは編成数
 local text_convoy = "%d : %s\n" //%dは番号， %sは編成名
-local text_convoy_verbose = "\"%s\",%d,%d,%d,\"%s\"\n" //%dは(x, y, z)座標， %sは路線名、編成名
+local text_convoy_verbose = "\"%s\",\"%s\",%d,%d,%d\n" //%sは路線名、編成名。%dは(x, y, z)座標，
 local text_no_convoys = "%s 管轄の編成はありません。" // %sは会社名
 local text_no_convoys_with_waytype = "%s 管轄の路線属性 %s の編成はありません。" //%sは会社名、属性名
 local text_invalid_waytype_title = "路線属性 %s は指定できません。" //%sは属性名
 local text_invalid_waytype_desc = "指定可能な編成属性は次のとおりです。"
-local text_none_waytype = "このコマンドの実行には路線属性の設定が必須です。"
-local text_none_waytype_desc = "指定可能な編成属性は次のとおりです。"
 
 include("libs/common")
 include("libs/embed_out")
@@ -38,11 +36,6 @@ class get_convoys_cmd {
         embed_error(format(text_invalid_waytype_title, params[2]), text_invalid_waytype_desc, wts)
         return
       }
-    } else {
-      // waytypeが存在しない場合はreturn.
-      // (編成数が多すぎるので重くなりすぎる)
-      embed_error(text_none_waytype, text_none_waytype_desc, wts)
-      return
     }
 
     // 隠し機能(編成路線、位置出力)
@@ -61,7 +54,7 @@ class get_convoys_cmd {
     local wt_cnt = 0 // 条件にマッチした編成数
     local convoys_str = ""
     if(output_verbose_flag) {
-      convoys_str = "line_name,posx,posy,posz,convoy_name\n"
+      convoys_str = "line_name,convoy_name,posx,posy,posz\n"
     }
     while (cnt<convoys_count&&i<MAX_CONVOY_COUNT) {
       i++
@@ -80,7 +73,7 @@ class get_convoys_cmd {
           if(line==null) {
             convoys_str += format(text_convoy_verbose, "", pos.x, pos.y, pos.z, convoy.get_name())
           } else {
-            convoys_str += format(text_convoy_verbose, line.get_name(), pos.x, pos.y, pos.z, convoy.get_name())
+            convoys_str += format(text_convoy_verbose, line.get_name(), convoy.get_name(), pos.x, pos.y, pos.z)
           }
         } else {
           convoys_str += format(text_convoy, i, convoy.get_name())

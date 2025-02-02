@@ -55,7 +55,12 @@ class FileChangeHandler(FileSystemEventHandler):
                     message_list += [message]
                 for i, message in enumerate(message_list):
                     coro = ch.send(f'(Part {i + 1}/{len(message_list)})\n``{message}``')
-                    asyncio.run_coroutine_threadsafe(coro, client.loop)
+                    fut = asyncio.run_coroutine_threadsafe(coro, client.loop)
+                    try:
+                        fut.result()
+                    except:
+                        # an error happened sending the message
+                        pass
     
     def embed_out(self):
         with open(FILE_EMBED, encoding='utf-8') as f:
@@ -95,7 +100,12 @@ class FileChangeHandler(FileSystemEventHandler):
                     if jo["footer"]:
                         embed.set_footer(text=jo["footer"])
                     coro = ch.send(embed=embed)
-                    asyncio.run_coroutine_threadsafe(coro, client.loop)
+                    fut = asyncio.run_coroutine_threadsafe(coro, client.loop)
+                    try:
+                        fut.result()
+                    except:
+                        # an error happened sending the message
+                        pass
     
     # ファイル変更時のイベント
     def on_modified(self, event):
