@@ -13,11 +13,11 @@ include("libs/common")
 include("libs/embed_out")
 
 class get_halts_cmd {
-  
+
   function _min(a,b) {
     return a<b ? a : b
   }
-  
+
   function _get_unique(arr) {
     local new_arr = []
     foreach (e in arr) {
@@ -27,32 +27,32 @@ class get_halts_cmd {
     }
     return new_arr
   }
-  
+
   // 自路線由来で赤棒状態になっているか判定する
   function _is_overcrowded(line, halt) {
     if(halt.get_waiting()[0]<halt.get_capacity(good_desc_x.passenger)) {
       return false // そもそも赤棒立ってない
     }
-    
+
     // 路線の停留所名リストを取得する
     local schedule_halts = map(line.get_schedule().entries, (@(e) e.get_halt(line.get_owner())))
     schedule_halts = filter(schedule_halts, (@(h) h!=null)) //中継点除去
     schedule_halts = map(schedule_halts, (@(h) h.get_name())) //名前に変換
     schedule_halts = _get_unique(schedule_halts) //重複除去
-    
+
     //路線所属駅への待機客を取得する
     local dest_halts = halt.get_connections(good_desc_x.passenger)
-    local dests = map(dest_halts, (@(d) [d, halt.get_freight_to_halt(good_desc_x.passenger, d)])) //[[halt, 待機数]]
+    local dests = map(dest_halts, (@(d) [d.halt, halt.get_freight_to_halt(good_desc_x.passenger, d.halt)])) //[[halt, 待機数]]
     dests = filter(dests, (@(d) d[1]>0)) //待機客0人を除外
     dests = filter(dests, (@(d) schedule_halts.find(d[0].get_name())!=null))
-    
+
     local waiting_cnt = 0
     foreach (d in dests) {
       waiting_cnt += d[1]
     }
     return waiting_cnt>=halt.get_capacity(good_desc_x.passenger)
   }
-  
+
   // 乗降客の多さでソートして出力
   function show_halts_sorted(line, halts, num_to_show) {
     halts.sort(@(a,b) b[1]<=>a[1])
@@ -72,7 +72,7 @@ class get_halts_cmd {
     local title = format(text_halt_title_rank, line.get_name() ,line.get_owner().get_name())
     embed_normal(title, halts_txt, null, text_halt_caption_rank)
   }
-  
+
   // 停車順に一覧を出力（重複を認める）
   function show_halts_ordered(line, halts) {
     local halts_txt = ""
@@ -93,7 +93,7 @@ class get_halts_cmd {
       embed_normal(title, halts_txt)
     }
   }
-  
+
   // "停車駅,XX" の形式でコマンドを受け取り，路線番号XXの現在の待機客数を返す．
   function exec(str) {
     local params = split(str,",")
@@ -101,7 +101,7 @@ class get_halts_cmd {
       embed_error(text_require_param_title, text_require_param_desc)
       return
     }
-    
+
     // 路線番号に対応する路線があるか
     local line = null
     try {
@@ -114,14 +114,14 @@ class get_halts_cmd {
       return
     }
     // lineには存在する路線が代入されていることが保証された
-    
+
     // 路線の停車駅を取得
     local pl = line.get_owner()
     local schedule_entry = line.get_schedule().entries
     local schedule_halts = filter(schedule_entry, (@(e) e.get_halt(pl)!=null))
     schedule_halts.apply(@(e) e.get_halt(pl))
     local halts = map(schedule_halts, (@(h) [h, h.get_arrived()[1] + h.get_departed()[1]]))
-    
+
     // 3つ目のパラメタ（自然数）の有無で分岐
     local halts_to_show = 0
     if(params.len()>=3) {

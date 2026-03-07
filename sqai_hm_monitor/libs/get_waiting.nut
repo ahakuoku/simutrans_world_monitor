@@ -9,11 +9,11 @@ local text_dest_info = "%d人 ... %s\n" //%dは待機客数，%sは目的地
 include("libs/embed_out")
 
 class get_waiting_cmd {
-  
+
   function _min(a,b) {
     return a<b ? a : b
   }
-  
+
   // "待機,XX駅" の形式でコマンドを受け取り，XX駅の現在の待機客数を返す．
   function exec(str) {
     local params = split(str,",")
@@ -34,13 +34,13 @@ class get_waiting_cmd {
       embed_error(format(text_invalid_param, sta_name))
       return
     }
-    
+
     //目的地別のリストを作る
     local dest_halts = this_halt.get_connections(good_desc_x.passenger)
-    local dests = map(dest_halts, (@(d) [d, this_halt.get_freight_to_halt(good_desc_x.passenger, d)])) //[[halt, 待機数]]
+    local dests = map(dest_halts.halt, (@(d) [d, this_halt.get_freight_to_halt(good_desc_x.passenger, d)])) //[[halt, 待機数]]
     dests = filter(dests, (@(d) d[1]>0)) //待機客0人を除外
     dests.sort(@(a,b) b[1]<=>a[1]) //客の多さでソート．降順
-    
+
     //結果を出力
     local num_waiting = this_halt.get_waiting()[0]
     local capacity = this_halt.get_capacity(good_desc_x.passenger)
