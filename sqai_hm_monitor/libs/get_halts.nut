@@ -35,7 +35,7 @@ class get_halts_cmd {
     }
 
     // 路線の停留所名リストを取得する
-    local schedule_halts = map(line.get_schedule().entries, (@(e) e.get_halt(line.get_owner())))
+    local schedule_halts = map(line.get_schedule().entries, (@(e) tile_x(e.x, e.y, e.z).get_halt()))
     schedule_halts = filter(schedule_halts, (@(h) h!=null)) //中継点除去
     schedule_halts = map(schedule_halts, (@(h) h.get_name())) //名前に変換
     schedule_halts = _get_unique(schedule_halts) //重複除去
@@ -118,8 +118,8 @@ class get_halts_cmd {
     // 路線の停車駅を取得
     local pl = line.get_owner()
     local schedule_entry = line.get_schedule().entries
-    local schedule_halts = filter(schedule_entry, (@(e) e.get_halt(pl)!=null))
-    schedule_halts.apply(@(e) e.get_halt(pl))
+    local schedule_halts = filter(schedule_entry, (@(e) tile_x(e.x, e.y, e.z).get_halt()!=null))
+    schedule_halts.apply(@(e) tile_x(e.x, e.y, e.z).get_halt())
     local halts = map(schedule_halts, (@(h) [h, h.get_arrived()[1] + h.get_departed()[1]]))
 
     // 3つ目のパラメタ（自然数）の有無で分岐
